@@ -22,6 +22,7 @@ use hal::delay::Delay;
 use hal::time::Hertz;
 use hal::clock::GenericClockController;
 
+use ehal::digital::v2::OutputPin;
 use ehal::prelude::*;
 
 use pac::{CorePeripherals,Peripherals,PM};
@@ -49,16 +50,18 @@ impl DHT20 {
     ) -> Self {
         let mut buffer = [0u8; 7];
 
-        let config = i2c::Config::new(
-            &pm,
-            sercom,
-            hal::sercom::i2c::Pads::<Sercom3>::new(sda, scl),
-            10.mhz()
-        );
-
         let mut dht20 = Self {
             address: 0x38,
-            i2c: bsp::i2c_master(clocks, baud, sercom, pm, sda, scl),
+            i2c: {
+                let mut i2c = hal::sercom::i2c::Config::new(
+                    &pm,
+                    sercom,
+                    hal::sercom::i2c::Pads::<Sercom3, Sda, Scl>::new(sda.into(), scl.into()),
+                    10.mhz()
+                );
+                i2c.set_baud(baud);
+                i2c.enable()
+            },
             temperature: 0.0,
             humidity: 0.0
         };
@@ -67,7 +70,7 @@ impl DHT20 {
          
         dht20.i2c.write_read(dht20.address, &[0x71], &mut buffer).unwrap(); // get status word
 
-        // led.set_high().unwrap();
+        led.set_high().unwrap();
         //
         // if (buffer[0] & (1 << 3)) != 0 {
         //     dht20.i2c.write(dht20.address, &[0x08, 0x00]).unwrap();
