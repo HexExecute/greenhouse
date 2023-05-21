@@ -184,6 +184,8 @@ fn main() -> ! {
 
     let mut red_led: bsp::RedLed = pin_alias!(pins.red_led).into();
 
+    delay.delay_ms(200u8);
+
     let dht20 = DHT20::new(
         i2c_master(
             &mut clocks,
@@ -196,13 +198,26 @@ fn main() -> ! {
         delay
     );
 
+
     match dht20 {
-        Err(_) => {
-            red_led.set_high().unwrap();
+        Err(e1) => {
+            match e1 {
+                dht20::Error::Uncalibrated => (),
+                dht20::Error::Bus(e2) => {
+                    match e2 {
+                        hal::sercom::i2c::Error::BusError => (),
+                        hal::sercom::i2c::Error::ArbitrationLost => (),
+                        hal::sercom::i2c::Error::LengthError => (),
+                        hal::sercom::i2c::Error::Nack => (),
+                        hal::sercom::i2c::Error::Timeout => ()
+                    }
+                },
+                dht20::Error::Checksum => ()
+            }
         },
-        Ok(_) => {
-        }
+        Ok(_) => ()
     }
+
 
     // let dht20 = Aht20::new(
     //     i2c_master(

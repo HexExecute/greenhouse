@@ -1,6 +1,4 @@
 use bsp::ehal;
-use bsp::hal;
-use bsp::pac;
 use feather_m0 as bsp;
 
 use bitflags::bitflags;
@@ -99,6 +97,7 @@ where
         }
 
         while self.status()?.contains(StatusFlags::CALIBRATION_ENABLE) {
+            // self.delay.delay_ms(10);
             return Err(Error::Uncalibrated);
         }
 
