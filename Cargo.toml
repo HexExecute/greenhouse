@@ -15,6 +15,7 @@ feather_m0 = "0.12.1"
 usb-device = "0.2.9"
 panic-halt = "0.2.0"
 cortex-m-rtic = "1.1.4"
+bitflags = "2.3.1"
 
 [profile.dev]
 incremental = false
