@@ -19,7 +19,7 @@ checksum = "73ef309bf38b69dfbf7d5781c9fbce35b876a7f163653a7105848885047827a6"
 dependencies = [
  "atsamd21g",
  "bitfield",
- "bitflags 1.3.2",
+ "bitflags",
  "cortex-m",
  "embedded-hal",
  "modular-bitfield",
@@ -78,10 +78,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
-name = "bitflags"
-version = "2.3.1"
+name = "bme280-rs"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6776fc96284a0bb647b615056fc496d1fe1644a7ab01829818a6d91cae888b84"
+checksum = "543ad15b2efb1afa90d291755beb747cacd3f58cc6fd1125ff092296561c60e5"
+dependencies = [
+ "embedded-hal",
+ "log",
+]
 
 [[package]]
 name = "byteorder"
@@ -196,7 +200,7 @@ dependencies = [
 name = "greenhouse"
 version = "0.1.0"
 dependencies = [
- "bitflags 2.3.1",
+ "bme280-rs",
  "cortex-m",
  "cortex-m-rt",
  "cortex-m-rtic",
