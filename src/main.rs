@@ -59,16 +59,33 @@ fn main() -> ! {
     let mut delay = Delay::new(core_peripherals.SYST, &mut clocks);
 
 
+    let mut red_led: bsp::RedLed = pin_alias!(pins.red_led).into();
+
     // initialize i2c and configure i2c
     let pads = i2c::Pads::<Sercom3, Sda, Scl>::new(pins.sda, pins.scl);
 
-    let mut i2c_config = i2c::Config::new(&peripherals.PM, peripherals.SERCOM3, pads, 100.khz());
-    i2c_config.set_baud(100.khz());
-    let i2c_bus = i2c_config.enable();
+    let gclk0 = clocks.gclk0();
+    let sercom3_clock = &clocks.sercom3_core(&gclk0).unwrap();
+
+    let i2c_bus = i2c::Config::new(&peripherals.PM, peripherals.SERCOM3, pads, sercom3_clock.freq())
+        .baud(100.khz())
+        .enable();
+
     
     let mut bme280 = Bme280::new(i2c_bus, delay);
 
-    bme280.init().unwrap();
+    match bme280.init() {
+        Ok(_) => (),
+        Err(e) => {
+            match e {
+                i2c::Error::BusError => red_led.set_high().unwrap(),
+                i2c::Error::ArbitrationLost => (),
+                i2c::Error::LengthError => (),
+                i2c::Error::Nack => (),
+                i2c::Error::Timeout => ()
+            }
+        }
+    }
 
     bme280.set_sampling_configuration(
         Configuration::default()
@@ -78,19 +95,16 @@ fn main() -> ! {
             .with_sensor_mode(SensorMode::Normal)
     ).unwrap();
 
-
     // initialize bme280 sensor
     // let mut bme280 = BME280::new_primary(i2c_bus);
 
-    let mut red_led: bsp::RedLed = pin_alias!(pins.red_led).into();
-
-    if let Some(temperature) = bme280.read_temperature().unwrap() {
-        if temperature >= TEMPERATURE_THRESHOLD {
-            red_led.set_high().unwrap();
-        }
-    }
 
     loop {
+        // if let Some(temperature) = bme280.read_temperature().unwrap() {
+        //     if temperature >= TEMPERATURE_THRESHOLD {
+        //         red_led.set_high().unwrap();
+        //     }
+        // }
         //delay.delay_ms(200u8);
         //dht20.measure(&mut delay);
         //
